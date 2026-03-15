@@ -1,4 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import { Exclude } from 'class-transformer';
+import { ManyToMany, JoinTable } from 'typeorm';
+import { Interest } from '../../interests/entities/interest.entity';
 
 export enum UserRole {
   ENTREPRENEUR = 'entrepreneur',
@@ -15,6 +18,7 @@ export class User {
   @Column({ unique: true })
   email: string;
 
+  @Exclude()
   @Column()
   password: string;
 
@@ -31,7 +35,12 @@ export class User {
   })
   role: UserRole;
 
+  @ManyToMany(() => Interest, (interest) => interest.users, {
+    eager: true,
+  })
+  @JoinTable()
+  interests: Interest[];
+
   @CreateDateColumn()
   createdAt: Date;
-
 }
