@@ -7,6 +7,7 @@ import { buildTypeOrmConfig } from './config/typeorm.config';
 import { UsersModule } from './modules/users/users.module';
 import { InterestsModule } from './modules/interests/interests.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { ProjectsModule } from './modules/projects/projects.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AuthModule } from './modules/auth/auth.module';
     UsersModule,
     InterestsModule,
     AuthModule,
+    ProjectsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
