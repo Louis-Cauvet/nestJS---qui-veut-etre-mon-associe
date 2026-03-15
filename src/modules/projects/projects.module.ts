@@ -14,5 +14,6 @@ import { InterestsModule } from '../interests/interests.module';
   ],
   controllers: [ProjectsController],
   providers: [ProjectsService],
+  exports: [ProjectsService], 
 })
 export class ProjectsModule {}

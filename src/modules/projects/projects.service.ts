@@ -34,4 +34,11 @@ export class ProjectsService {
       relations: ['entrepreneur', 'interests'],
     });
   }
+
+  async findOne(id: string): Promise<Project | null> {
+    return this.projectRepository.findOne({
+      where: { id },
+      relations: ['entrepreneur', 'interests'],
+    });
+  }
 }
