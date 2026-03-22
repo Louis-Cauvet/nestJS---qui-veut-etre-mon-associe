@@ -1,4 +1,4 @@
-import { IsString, MinLength, IsOptional, IsArray, IsUUID } from 'class-validator';
+import { IsString, MinLength, IsOptional, IsArray, IsUUID, IsNumber, Min } from 'class-validator';
 
 export class CreateProjectDto {
   @IsString()
@@ -8,8 +8,16 @@ export class CreateProjectDto {
   @IsString()
   description: string;
 
+  @IsNumber()
+  @Min(1)
+  budget: number;
+
+  @IsString()
+  @MinLength(2)
+  category: string;
+
   @IsOptional()
   @IsArray()
-  @IsUUID("all", { each: true })
+  @IsUUID('all', { each: true })
   interests?: string[];
 }

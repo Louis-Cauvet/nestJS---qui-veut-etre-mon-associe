@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import {Injectable,NotFoundException,ForbiddenException,} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Project } from './entities/project.entity';
 import { CreateProjectDto } from './dto/create-project.dto';
+import { UpdateProjectDto } from './dto/update-project.dto';
 import { InterestsService } from '../interests/interests.service';
-import { User } from '../users/entities/user.entity';
+import { User, UserRole } from '../users/entities/user.entity';
 
 @Injectable()
 export class ProjectsService {
@@ -22,22 +23,77 @@ export class ProjectsService {
       entrepreneur: user,
     });
 
-    if (interests && interests.length > 0) {
+    if (interests?.length) {
       project.interests = await this.interestsService.findByIds(interests);
     }
 
     return this.projectRepository.save(project);
   }
 
-  findAll() {
+  async findAll() {
     return this.projectRepository.find({
       relations: ['entrepreneur', 'interests'],
     });
   }
 
-  async findOne(id: string): Promise<Project | null> {
-    return this.projectRepository.findOne({
+  async findOneOrFail(id: string) {
+    const project = await this.projectRepository.findOne({
       where: { id },
+      relations: ['entrepreneur', 'interests'],
+    });
+
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+
+    return project;
+  }
+
+  async update(id: string, updateProjectDto: UpdateProjectDto, user: User) {
+    const project = await this.findOneOrFail(id);
+
+    if (project.entrepreneur.id !== user.id) {
+      throw new ForbiddenException('You can only update your own projects');
+    }
+
+    const { interests, ...projectData } = updateProjectDto;
+    Object.assign(project, projectData);
+
+    if (interests) {
+      project.interests = await this.interestsService.findByIds(interests);
+    }
+
+    return this.projectRepository.save(project);
+  }
+
+  async remove(id: string, user: User) {
+    const project = await this.findOneOrFail(id);
+
+    const isOwner = project.entrepreneur.id === user.id;
+    const isAdmin = user.role === UserRole.ADMIN;
+
+    if (!isOwner && !isAdmin) {
+      throw new ForbiddenException('You cannot delete this project');
+    }
+
+    await this.projectRepository.remove(project);
+
+    return { message: 'Project deleted successfully' };
+  }
+
+  async findRecommended(user: User) {
+    if (!user.interests?.length) {
+      return [];
+    }
+
+    const interestIds = user.interests.map((interest) => interest.id);
+
+    return this.projectRepository.find({
+      where: {
+        interests: {
+          id: In(interestIds),
+        },
+      },
       relations: ['entrepreneur', 'interests'],
     });
   }

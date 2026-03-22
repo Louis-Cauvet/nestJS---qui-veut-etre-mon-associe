@@ -9,6 +9,7 @@ import { InterestsModule } from './modules/interests/interests.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { InvestmentsModule } from './modules/investments/investments.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { InvestmentsModule } from './modules/investments/investments.module';
     AuthModule,
     ProjectsModule,
     InvestmentsModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

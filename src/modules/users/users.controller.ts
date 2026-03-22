@@ -1,21 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Body, Param, Delete, Put, Post } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { UpdateUserInterestsDto } from './dto/update-user-interests.dto';
+
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
-
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
-  }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
@@ -31,15 +27,30 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('interests')
+  getUserInterests(@CurrentUser() user) {
+    return this.usersService.getUserInterests(user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('interests')
+  updateUserInterests(
+    @CurrentUser() user,
+    @Body() updateUserInterestsDto: UpdateUserInterestsDto,
+  ) {
+    return this.usersService.updateUserInterests(user.id, updateUserInterestsDto.interests);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto);
+  @Put('profile')
+  updateProfile(@CurrentUser() user,@Body() updateUserDto: UpdateUserDto,) {
+    return this.usersService.update(user.id, updateUserDto);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

@@ -3,9 +3,13 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
+import { User, UserRole } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import { InterestsService } from '../interests/interests.service';
+import { BadRequestException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
+
+
 
 @Injectable()
 export class UsersService {
@@ -17,7 +21,11 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const { interests, password, ...userData } = createUserDto;
+    const { interests, password, role, ...userData } = createUserDto;
+
+    if (role === UserRole.ADMIN) {
+      throw new BadRequestException('Admin role cannot be assigned during public registration');
+    }
 
     const existingUser = await this.findByEmail(createUserDto.email);
     if (existingUser) {
@@ -30,6 +38,7 @@ export class UsersService {
       ...userData,
       email: createUserDto.email,
       password: hashedPassword,
+      role: role ?? UserRole.ENTREPRENEUR,
     });
 
     if (interests && interests.length > 0) {
@@ -73,4 +82,25 @@ export class UsersService {
     return this.usersRepository.delete(id);
   }
 
+  async getUserInterests(id: string) {
+    const user = await this.findOne(id);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user.interests ?? [];
+  }
+
+  async updateUserInterests(id: string, interestIds: string[]) {
+    const user = await this.findOne(id);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    user.interests = await this.interestsService.findByIds(interestIds);
+
+    return this.usersRepository.save(user);
+  }
 }

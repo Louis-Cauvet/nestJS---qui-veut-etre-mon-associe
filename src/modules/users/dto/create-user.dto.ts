@@ -1,4 +1,5 @@
-import { IsArray, IsUUID, IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsArray, IsUUID, IsEmail, IsOptional, IsString, MinLength, IsEnum } from 'class-validator';
+import { UserRole } from '../entities/user.entity';
 
 export class CreateUserDto {
   @IsEmail()
@@ -17,7 +18,11 @@ export class CreateUserDto {
   lastname?: string;
 
   @IsOptional()
+  @IsEnum(UserRole)
+  role?: UserRole;
+
+  @IsOptional()
   @IsArray()
-  @IsUUID("all", { each: true })
+  @IsUUID('all', { each: true })
   interests?: string[];
 }

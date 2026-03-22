@@ -22,4 +22,10 @@ export class Project {
   @ManyToMany(() => Interest)
   @JoinTable()
   interests: Interest[];
+
+  @Column('decimal')
+  budget: number;
+
+  @Column()
+  category: string;
 }
