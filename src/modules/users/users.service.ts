@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -29,7 +29,7 @@ export class UsersService {
 
     const existingUser = await this.findByEmail(createUserDto.email);
     if (existingUser) {
-      throw new Error('Email already exists');
+      throw new ConflictException('Email already exists');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -70,13 +70,16 @@ export class UsersService {
     }
 
     const { interests, ...userData } = updateUserDto;
+
     Object.assign(user, userData);
+
     if (interests) {
       user.interests = await this.interestsService.findByIds(interests);
     }
 
     return this.usersRepository.save(user);
   }
+
 
   async remove(id: string) {
     return this.usersRepository.delete(id);

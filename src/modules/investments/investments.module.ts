@@ -14,5 +14,6 @@ import { UsersModule } from '../users/users.module';
   ],
   controllers: [InvestmentsController],
   providers: [InvestmentsService],
+  exports: [InvestmentsService],
 })
 export class InvestmentsModule {}
